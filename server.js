@@ -2,6 +2,14 @@ const express = require('express');
 const app = express();
 const PORT = 3003;
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+
 const CLIENT_ID = "7LdAwx2v-bKI_h8wbP0L2O-eFja3VujgHIHPk5S8-wY";
 const CLIENT_SECRET = "1303c7003860c62005a0a6c93d323555b9df40e6b7820f50b3a68e7426a15aa0";
 const REDIRECT_URI = "https://pop-os.tail0ff7f6.ts.net/";
