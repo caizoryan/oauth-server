@@ -1,6 +1,7 @@
 const CLIENT_ID = "7LdAwx2v-bKI_h8wbP0L2O-eFja3VujgHIHPk5S8-wY";
 const CLIENT_SECRET = "1303c7003860c62005a0a6c93d323555b9df40e6b7820f50b3a68e7426a15aa0";
 const REDIRECT_URI = "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth";
+const CLIENT_URL = "http://localhost:7222"
 
 const AUTHORIZATION_URL = "https://www.are.na/oauth/authorize";
 const TOKEN_URL = "https://api.are.na/v3/oauth/token";
@@ -24,17 +25,21 @@ export async function handler(event, context) {
   const scopeValue = scope || "read";
 
   if (action === "auth") {
-    const authUrl = new URL(AUTHORIZATION_URL);
-    authUrl.searchParams.set("client_id", CLIENT_ID);
-    authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
-    authUrl.searchParams.set("response_type", "code");
-    authUrl.searchParams.set("scope", scopeValue);
+		let authUrl = new URL(AUTHORIZATION_URL)
+		let params = new URLSearchParams({
+				client_id: CLIENT_ID,
+				redirect_uri: REDIRECT_URI,
+				response_type: 'code',
+				scope: scopeValue
+			})
+
+	  authUrl = authUrl + '?' + params;
 
     return {
       statusCode: 200,
       headers: corsHeaders,
       body: JSON.stringify({ authorization_url: authUrl.toString() }),
-    };
+		};
   }
 
   if (code) {
@@ -64,7 +69,7 @@ export async function handler(event, context) {
 
       const tokenData = await tokenResponse.json();
       const accessToken = tokenData.access_token;
-      const link = `http://localhost:7222/?token=${accessToken}`;
+      const link = `${CLIENT_URL}/?token=${accessToken}`;
 
       return {
         statusCode: 200,
@@ -77,7 +82,7 @@ export async function handler(event, context) {
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Simple Redirector</title>
+    <title>Redirector</title>
   </head>
   <body>
   </body>
