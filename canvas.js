@@ -1,6 +1,7 @@
 // Drawing canvas with reactive state
 import {dom} from './dom.js'
 import { reactive, memo } from './chowk.js'
+import { encode } from './tiny_stroke/parser.js'
 
 const name = "aaryan"
 const host = "https://caizoryan-receiveandsavepoints.web.val.run/"
@@ -27,6 +28,14 @@ export let state = {
 	points: reactive([]),
 	undoStack: reactive([])
 };
+
+export const getTinyStroke = () => {
+	let strokes = state.points.value()
+	let encoded = encode(strokes)
+	console.log(encoded)
+	return encoded.reduce((acc, e, i) => (acc[i] = e, acc), {})
+
+}
 
 // Color slider component
 function colorSlider(initialValue, max = 255, label) {

@@ -1,7 +1,7 @@
 // Are.na OAuth client-side logic
 import {dom} from './dom.js'
 import { reactive, memo } from './chowk.js'
-import { canvasEl, drawCanvas } from './canvas.js';
+import { canvasEl, drawCanvas, getTinyStroke } from './canvas.js';
 import { uploadImage } from './arena/uploadImage.js';
 import { createBlock } from './arena/createBlock.js';
 
@@ -10,10 +10,6 @@ const API_BASE = "https://api.are.na/v3";
 
 // for 50 kv pairs on are.na metadata, can't have each string longer than 642 chars
 const MAX_METADATA_CHARS = 642
-
-let metadata = Array(50).fill(0)
-	.map(_ => Array(642).fill(0).map(_ => '+').join(""))
-	.reduce((acc, e, i) => (acc[i] = e, acc), {})
 
 // Reactive state
 let state = {
@@ -39,7 +35,7 @@ const root = dom(['div.root',
 					createBlock({
 						value: res, 
 						title: "TESTING",
-						metadata,
+						metadata: getTinyStroke(),
 						channel_id: 'rsvp-test'
 					}, checkForToken())
 					.then(res => console.log(res))

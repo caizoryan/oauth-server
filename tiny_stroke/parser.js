@@ -1,7 +1,7 @@
 /**
  * Parse an array of stroke strings into Stroke[]
  * @param {string[]} strings - Array of stroke strings
- * @returns {Array<{color: string, brushSize: number, points: [number, number][]}>}
+ * @returns {Array<{color: string, strokeWidth: number, points: [number, number][]}>}
  */
 export function parse(strings) {
   return strings.map(str => {
@@ -12,8 +12,8 @@ export function parse(strings) {
 
 		console.log(str.slice(0, 11), r, g, b)
     
-    // Extract brush size (next 2 chars)
-    const brushSize = parseInt(str.slice(9, 11), 10);
+    // Extract stroke width (next 2 chars)
+    const strokeWidth = parseInt(str.slice(9, 11), 10);
     
     // Extract points (remaining chars, 6 digits per point: 3 for x, 3 for y)
     const pointsStr = str.slice(11);
@@ -31,7 +31,7 @@ export function parse(strings) {
     
     return {
       color: `rgb(${r},${g},${b})`,
-      brushSize,
+      strokeWidth,
       points
     };
   });
@@ -39,7 +39,7 @@ export function parse(strings) {
 
 /**
  * Encode Stroke[] into an array of stroke strings
- * @param {Array<{color: string, brushSize: number, points: [number, number][]}>} strokes - Array of strokes
+ * @param {Array<{color: string, strokeWidth: number, points: [number, number][]}>} strokes - Array of strokes
  * @returns {string[]}
  */
 export function encode(strokes) {
@@ -55,7 +55,7 @@ export function encode(strokes) {
       r.toString().padStart(3, '0') +
       g.toString().padStart(3, '0') +
       b.toString().padStart(3, '0') +
-      stroke.brushSize.toString().padStart(2, '0');
+      stroke.strokeWidth.toString().padStart(2, '0');
     
     // Add points
     for (const [x, y] of stroke.points) {
