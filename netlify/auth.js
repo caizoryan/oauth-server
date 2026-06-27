@@ -21,10 +21,10 @@ export async function handler(event, context) {
     };
   }
 
-  const { code, action, scope } = event.queryStringParameters || {};
+  const { code, action, scope, error } = event.queryStringParameters || {};
   const scopeValue = scope || "read";
 
-	if (action == 'error') {
+	if (error == 'access_denied') {
     return ReturnToken("DENIED");
 	}
 
