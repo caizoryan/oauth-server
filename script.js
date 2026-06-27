@@ -56,9 +56,13 @@ function checkForToken() {
   const token = params.get("token");
   
   if (token) {
-    localStorage.setItem("arena_access_token", token);
-    window.history.replaceState({}, "", window.location.pathname);
-    return token;
+		if (token=='DENIED') {
+			console.log('denied')
+		} else {
+			localStorage.setItem("arena_access_token", token);
+			window.history.replaceState({}, "", window.location.pathname);
+			return token;
+		}
   }
   
   return localStorage.getItem("arena_access_token");
