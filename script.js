@@ -1,9 +1,11 @@
 // Are.na OAuth client-side logic
 import {dom} from './dom.js'
 import { reactive, memo } from './chowk.js'
-import { canvasEl, drawCanvas, getTinyStroke } from './canvas.js';
+import { canvasEl, drawCanvas, getTinyStroke, render_points, setPoints } from './canvas.js';
 import { uploadImage } from './arena/uploadImage.js';
 import { createBlock } from './arena/createBlock.js';
+import { getChannel, getChannelContents } from './arena/channel.js';
+import { parse } from './tiny_stroke/parser.js';
 
 const CLIENT_URL = "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth";
 const API_BASE = "https://api.are.na/v3";
@@ -25,18 +27,20 @@ const auth = ['.auth',
 		: ['button', { onclick: login }, 'Login'],
 		[state.isAuthenticated]),
 ]
+
+
 const root = dom(['div.root', 
 	auth ,
 	canvasEl,
 	['button', {
 		onclick: () => {
-			uploadImage(drawCanvas, 'dawgy.jpeg', checkForToken())
+			uploadImage(drawCanvas, 'drawig.jpeg', checkForToken())
 				.then(res => {
 					createBlock({
 						value: res, 
 						title: "TESTING",
 						metadata: getTinyStroke(),
-						channel_id: 'rsvp-test'
+						channel_id: 'rsvp-test-d9r1hsyg5ie'
 					}, checkForToken())
 					.then(res => console.log(res))
 				})
@@ -97,6 +101,35 @@ async function fetchUserProfile(token) {
     localStorage.removeItem("arena_access_token");
     state.isAuthenticated.next(false);
   }
+
+	
+}
+
+state.isAuthenticated.memo(e => {
+	if (e){
+		getChannelContents('rsvp-test-d9r1hsyg5ie', checkForToken())
+			.then(res => {
+				let userBlock = findUserChannel(res.data)
+				if (userBlock){
+					// try parse metadata
+					if(userBlock.metadata ){
+						try {
+							let parsed = parse(Object.values(userBlock.metadata))
+							setPoints(parsed)
+							render_points(parsed, true)
+						}
+						catch(err){
+							console.log("RERRO", err)
+						}
+					}
+				}
+			})
+	}
+})
+
+function findUserChannel(blocks){
+	let found = blocks.find(e => e.user.id == state.userData.value().id)
+	return found
 }
 
 // Initialize

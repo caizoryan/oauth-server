@@ -3,21 +3,7 @@ import {dom} from './dom.js'
 import { reactive, memo } from './chowk.js'
 import { encode } from './tiny_stroke/parser.js'
 
-const name = "aaryan"
-const host = "https://caizoryan-receiveandsavepoints.web.val.run/"
 const scale = window.innerWidth < 500 ? window.innerWidth / 500 : 1
-
-async function send_points(name, points) {
-	return await fetch(host + name, {
-		headers: { "Content-Type": "application/json" },
-		method: "POST",
-		body: JSON.stringify({ points: points }),
-	}).then((res) => res.json())
-}
-
-async function get_points(name) {
-	return await fetch(host + name).then((res) => res.json())
-}
 
 // Reactive state
 export let state = {
@@ -29,12 +15,16 @@ export let state = {
 	undoStack: reactive([])
 };
 
+export const setPoints = points => {
+	state.points.next(points)
+}
+
 export const getTinyStroke = () => {
 	let strokes = state.points.value()
+	console.log(strokes)
 	let encoded = encode(strokes)
 	console.log(encoded)
 	return encoded.reduce((acc, e, i) => (acc[i] = e, acc), {})
-
 }
 
 // Color slider component
@@ -112,10 +102,6 @@ function redo() {
 	}
 }
 
-function save() {
-	send_points(name, state.points.value()).then(res => console.log(res))
-}
-
 // Build UI
 const controls = ['.controls',
 	['#sliders',
@@ -128,12 +114,11 @@ const controls = ['.controls',
 	['#buttons',
 		['button', { onclick: undo }, 'undo'],
 		['button', { onclick: redo }, 'redo'],
-		['button', { onclick: save }, 'Save']
+		// ['button', { onclick: save }, 'Save']
 	]
 ]
 
 export const drawCanvas = dom(['canvas#draw', { style: 'border: 1px solid black' } ])
-const potCanvas = dom(['canvas#pot',  { style:  'border: 1px solid black' }])
 
 if (window.innerWidth < 500) {
 	drawCanvas.style.transformOrigin = "0 0"
@@ -143,7 +128,7 @@ if (window.innerWidth < 500) {
 // Canvas setup
 let canvas, context, pot
 let isIdle = true
-let speed = 2
+let speed = 20
 
 function new_stroke(color, s) {
 	return { color: color, points: [], strokeWidth: s }
@@ -172,19 +157,18 @@ function add_to_stroke(x, y) {
 }
 
 function compress_stroke(stroke, THRESHOLD = 2) {
-	let l
+	let last_point
 	let compressed = []
 	stroke.forEach(e => {
-		if (!l || Math.abs(l[0] - e[0]) >  THRESHOLD
-			&& Math.abs(l[1] - e[1]) > THRESHOLD ){
-			l = e
+		if (!last_point 
+			|| Math.abs(last_point[0] - e[0]) >  THRESHOLD
+			&& Math.abs(last_point[1] - e[1]) > THRESHOLD ){
+			last_point = e
 			compressed.push(e)
 		}
 	})
 
 	return compressed
-	// only if stroke is less dist than threshold
-	//
 }
 
 function clear() {
@@ -197,6 +181,7 @@ function clear() {
 function draw_stroke(stroke) {
 	if (!stroke.points || stroke.points.length <= 0) return
 	let first = stroke.points[0]
+	console.log("Drawing?", stroke.color, stroke.strokeWidth)
 	context.beginPath()
 	context.strokeStyle = stroke.color
 	context.moveTo(first[0], first[1])
@@ -224,12 +209,13 @@ function draw_animated_stroke(stroke) {
 	})
 }
 
-function render_points(points, slow = false) {
+export function render_points(points, slow = false) {
 	clear()
 	if (!slow) points.forEach(draw_stroke)
 	else {
 		let last = 0
 		points.forEach(p => {
+
 			setTimeout(() => draw_animated_stroke(p), last + speed)
 			if (!p.points || p.points.length <= 0) return
 			last += p.points.length * speed + 5
@@ -242,7 +228,9 @@ function drawstart(event) {
 	context.beginPath()
 	const pts = state.points.value()
 	if (pts.length <= 0 || !last_stroke()?.points || last_stroke()?.points?.length != 0) {
-		pts.push(new_stroke(`rgb(${redSlider.value()}, ${greenSlider.value()}, ${blueSlider.value()})`, brushSizeSlider.value()))
+		pts.push(new_stroke(
+			`rgb(${redSlider.value()}, ${greenSlider.value()}, ${blueSlider.value()})`,
+			brushSizeSlider.value()))
 		state.points.next([...pts])
 	}
 
@@ -283,19 +271,17 @@ function drawend(event) {
 	isIdle = true
 	context.lineWidth = 1
 	let last = last_stroke()
-	let THRESHOLD = 0.1
+	let THRESHOLD = 0.05
 	while (last.points.length > 100){
 		console.log('last points length: ',last.points.length, 'COMPRESSING AT: ', THRESHOLD)
 		let compressed = compress_stroke(last.points, THRESHOLD)
 		console.log('compressed length: ', compressed.length)
 		last.points = compressed
-		THRESHOLD += .1
+		THRESHOLD += .05
 	}
 	
 	render_points(state.points.value())
 
-	console.log(state.points.value().map(e => e.points.length).join('\n'))
-	console.log(state.points.value())
 }
 
 function touchstart(event) { drawstart(event.touches[0]) }
