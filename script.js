@@ -11,7 +11,7 @@ const CLIENT_URL = "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/func
 const API_BASE = "https://api.are.na/v3";
 
 // for 50 kv pairs on are.na metadata, can't have each string longer than 642 chars
-const MAX_METADATA_CHARS = 642
+export const MAX_METADATA_CHARS = 642
 
 // Reactive state
 let state = {

@@ -2,6 +2,7 @@
 import {dom} from './dom.js'
 import { reactive, memo } from './chowk.js'
 import { encode } from './tiny_stroke/parser.js'
+import { MAX_METADATA_CHARS } from './script.js';
 
 const scale = window.innerWidth < 500 ? window.innerWidth / 500 : 1
 
@@ -21,9 +22,13 @@ export const setPoints = points => {
 
 export const getTinyStroke = () => {
 	let strokes = state.points.value()
-	console.log(strokes)
 	let encoded = encode(strokes)
-	console.log(encoded)
+
+	encoded.forEach(e => {
+		console.log(e.length)
+		if (e.length > MAX_METADATA_CHARS) console.error("BRUh, too big!?")
+	})
+
 	return encoded.reduce((acc, e, i) => (acc[i] = e, acc), {})
 }
 
@@ -225,6 +230,7 @@ export function render_points(points, slow = false) {
 
 // Drawing handlers
 function drawstart(event) {
+	if (state.points.value().length > 49 ) return
 	context.beginPath()
 	const pts = state.points.value()
 	if (pts.length <= 0 || !last_stroke()?.points || last_stroke()?.points?.length != 0) {
@@ -252,6 +258,7 @@ function drawstart(event) {
 }
 
 function drawmove(event) {
+	if (state.points.value().length > 49 ) return
 	if (isIdle) return
 	let rect = event.target.getBoundingClientRect()
 	let x = (event.clientX - rect.left) / scale
@@ -266,6 +273,7 @@ function drawmove(event) {
 }
 
 function drawend(event) {
+	if (state.points.value().length > 49 ) return
 	if (isIdle) return
 	drawmove(event)
 	isIdle = true
@@ -281,6 +289,7 @@ function drawend(event) {
 	}
 	
 	render_points(state.points.value())
+	let encoded = getTinyStroke()
 
 }
 

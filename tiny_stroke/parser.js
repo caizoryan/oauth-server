@@ -33,7 +33,8 @@ export function parse(strings) {
 }
 
 /**
- * Encode Stroke[] into an array of stroke strings
+ * Encode Stroke[] into an array of stroke strings and
+ * cannot be over 50 strokes.
  * @param {Array<{color: string, strokeWidth: number, points: [number, number][]}>} strokes - Array of strokes
  * @returns {string[]}
  */
@@ -59,6 +60,6 @@ export function encode(strokes) {
     }
     
     return str;
-  });
+  }).slice(0,50);
 }
 
