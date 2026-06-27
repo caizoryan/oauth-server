@@ -24,14 +24,24 @@
 		body {
 			background: #eee;
 			color: black;
-			max-width: 550px;
+			max-width: 500px;
 			margin: auto;
 		}
 
+		.bar {
+			height: 3em;
+			width: 100%;
+			display: flex;
+			justify-content: space-between;
+		}
+
 		#buttons {
-			display: grid;
-			grid-gap: 10px;
-			padding: 2px 10px;
+			display: flex;
+			font-size: 2em;
+		}
+		#buttons button {
+			padding: .5em;
+			margin-right: .25em;
 		}
 
 		button {
@@ -67,6 +77,7 @@
 			background: #1112;
 			margin-right: 10px;
 			margin-bottom: 2px;
+			border: 2px solid black;
 		}
 
 		.controls span {
@@ -86,7 +97,7 @@
 			width: 20px;
 			/* 1 */
 			height: 20px;
-			background: #22222222;
+			background: #fff;
 		}
 
 		::-moz-range-track {
@@ -94,7 +105,7 @@
 		}
 
 		::-moz-range-thumb {
-			background: #22222222;
+			background: #fff;
 			height: 20px;
 			width: 20px;
 			box-sizing: border-box;
@@ -107,7 +118,7 @@
 		}
 
 		::-ms-thumb {
-			background: #22222222;
+			background: #fff;
 			height: 20px;
 			width: 20px;
 			box-sizing: border-box;

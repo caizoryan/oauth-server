@@ -1,11 +1,16 @@
 // Are.na OAuth client-side logic
 import {dom} from './dom.js'
 import { reactive, memo } from './chowk.js'
-import { canvasEl, drawCanvas, getTinyStroke, render_points, setPoints } from './canvas.js';
+import { 
+	Drawing, canvasEl, getTinyStroke,  setPoints 
+} from './canvas.js';
 import { uploadImage } from './arena/uploadImage.js';
 import { createBlock } from './arena/createBlock.js';
 import { getChannel, getChannelContents } from './arena/channel.js';
 import { parse } from './tiny_stroke/parser.js';
+
+let drawCanvas = Drawing.canvas
+let render_points = Drawing.render_points
 
 const CLIENT_URL = "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth";
 const API_BASE = "https://api.are.na/v3";
