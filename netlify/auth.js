@@ -24,6 +24,10 @@ export async function handler(event, context) {
   const { code, action, scope } = event.queryStringParameters || {};
   const scopeValue = scope || "read";
 
+	if (action == 'error') {
+    return ReturnToken("DENIED");
+	}
+
   if (action === "auth") {
 		let authUrl = new URL(AUTHORIZATION_URL)
 		let params = new URLSearchParams({
@@ -69,9 +73,23 @@ export async function handler(event, context) {
 
       const tokenData = await tokenResponse.json();
       const accessToken = tokenData.access_token;
-      const link = `${CLIENT_URL}/?token=${accessToken}`;
 
+      return ReturnToken(accessToken);
+    } catch (error) {
       return {
+        statusCode: 500,
+        headers: corsHeaders,
+        body: `OAuth token exchange failed: ${error.message}`,
+      };
+    }
+  }
+
+  return BasePage;
+}
+
+let ReturnToken = (token) => {
+      const link = `${CLIENT_URL}/?token=${token}`;
+return {
         statusCode: 200,
         headers: {
           ...corsHeaders,
@@ -91,17 +109,10 @@ export async function handler(event, context) {
   </script>
 </html>
 `,
-      };
-    } catch (error) {
-      return {
-        statusCode: 500,
-        headers: corsHeaders,
-        body: `OAuth token exchange failed: ${error.message}`,
-      };
-    }
-  }
+      }
+}
 
-  return {
+let BasePage = {
     statusCode: 200,
     headers: {
       ...corsHeaders,
@@ -140,5 +151,4 @@ export async function handler(event, context) {
   </body>
 </html>
 `,
-  };
-}
+  }
