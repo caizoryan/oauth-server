@@ -9,8 +9,6 @@ export function parse(strings) {
     const r = parseInt(str.slice(0, 3), 10);
     const g = parseInt(str.slice(3, 6), 10);
     const b = parseInt(str.slice(6, 9), 10);
-
-		console.log(str.slice(0, 11), r, g, b)
     
     // Extract stroke width (next 2 chars)
     const strokeWidth = parseInt(str.slice(9, 11), 10);
@@ -22,9 +20,6 @@ export function parse(strings) {
     for (let i = 0; i < pointsStr.length-5; i += 6) {
       const x = parseInt(pointsStr.slice(i, i + 3));
       const y = parseInt(pointsStr.slice(i + 3, i + 6));
-
-			console.log(pointsStr.slice(i, i + 3), x)
-			console.log(pointsStr.slice(i + 3, i + 6), y)
 
       points.push([x, y]);
     }
@@ -45,10 +40,10 @@ export function parse(strings) {
 export function encode(strokes) {
   return strokes.map(stroke => {
     // Parse RGB from color string "rgb(r,g,b)"
-    const rgbMatch = stroke.color.match(/rgb\((\d+),(\d+),(\d+)\)/);
-    const r = rgbMatch ? parseInt(rgbMatch[1], 10) : 255;
-    const g = rgbMatch ? parseInt(rgbMatch[2], 10) : 255;
-    const b = rgbMatch ? parseInt(rgbMatch[3], 10) : 255;
+    const rgbMatch = stroke.color.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
+    const r = rgbMatch ? parseInt(rgbMatch[1]) : 255;
+    const g = rgbMatch ? parseInt(rgbMatch[2]) : 255;
+    const b = rgbMatch ? parseInt(rgbMatch[3]) : 255;
     
     // Build the string
     let str = 
