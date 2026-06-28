@@ -84,8 +84,9 @@ h2 {
 
 h4{
 	font-weight: 100;
-	margin-bottom: .5em;
+	margin-bottom: 1em;
 }
+
 h5{
 	margin-bottom: 1em;
 	font-weight: 100;
@@ -93,6 +94,11 @@ h5{
 
 p {
 	margin-top: .5em;
+}
+
+.two-col {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
 }
 
 .info{
@@ -139,13 +145,46 @@ hr {
 	margin-right: .25em;
 }
 
+.list-item {
+	border-top: .5px solid;
+  padding-top: .75em;
+	display: grid;
+	grid-template-columns: 2em auto;
+	grid-gap: 1em;
+}
+
+.going {
+	padding: .5em;
+	background-color: #A7D96C;
+	color: var(--col);
+	border: 1.5px solid var(--col);
+	/* text-transform: uppercase; */
+	display: grid;
+  grid-template-columns: 60px auto;
+	grid-gap: 1em;
+	font-size: 1.3em;
+}
+
+.going img {
+	width: 60px;
+}
+
+.list-item img {
+	width: 2em;
+}
+
 button {
 	all: unset;
-	border: 2px solid var(--col);
+	border: 1.5px solid var(--col);
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	cursor: pointer;
+}
+
+button[active="true"] {
+  background: var(--col);
+  color: var(--bg);
 }
 
 .controls {

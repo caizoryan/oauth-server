@@ -32,6 +32,7 @@ let state = {
   isLoading: reactive(false),
 	blocks: reactive([]),
 	usersBlock: reactive(null),
+	guestListView: reactive('gallery') // list, gallery
 }
 
 // xxx---------xxx----------xxx
@@ -151,9 +152,21 @@ async function uploadDrawing() {
       channel_id: CONFIG.CHANNEL_ID,
     }, token);
 
+		// if block exists and this got uploaded, remove old block
     console.log(res);
-		state.uploadingInProgress.next(false)
+		let userBlock = state.usersBlock.value()
+		if (userBlock?.id){
+			console.log('Severing',userBlock.connection.id)
+			fetch("https://api.are.na/v3/connections/"+userBlock.connection.id, {
+				method: 'DELETE',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+				}
+			})
+			// disconnect it
+		}
 		setTimeout(() => {
+			state.uploadingInProgress.next(false)
 			fetchBlocks(token)
 		}, 2500)
   } catch (err) {
@@ -204,7 +217,48 @@ const rsvpButton =  [
 	{ 
 		loading: state.uploadingInProgress,
 		onclick: uploadDrawing },
-	'RSVP'];
+	
+	state.usersBlock.memo(v => v?.id ? "update rsvp" : 'rsvp')
+];
+
+const guestList = ['.two-col', 
+	['h4', memo(() => 'Going ('+ RSVPBlockLength.value() +')', [RSVPBlockLength])],
+
+	['.buttons.two-col', 
+		['button', {
+			active: state.guestListView.memo(v => v == 'list'),
+			onclick:()=> state.guestListView.next('list')
+		}, 'list'],
+		['button', {
+			active: state.guestListView.memo(v => v == 'gallery'),
+			onclick: ()=> state.guestListView.next('gallery')
+		}, 'gallery']
+	]
+
+]
+
+
+const guestImages =  ['div', 
+		memo(() => 
+		state.guestListView.value() == 'gallery' 
+			? ['.images', ...RSVPBlocks.value().map(e => 
+					['img', {
+						src: e.image.src,
+						title: e.user?.name,
+						onclick: () => e?.metadata ? parseAndLoadDrawing(e) : null,
+					}])]
+			: ['.list', ...RSVPBlocks.value()
+				// .map(e =>  e.user.name)
+				// .filter(unique)
+				.map(e => ['p.list-item', ['img', {src: e.image.src}], e.user.name])]
+				,
+		[RSVPBlocks, state.guestListView])
+	]
+
+const youGoing = ['p.going', 
+	state.usersBlock.memo(v => v?.id ? dom(['img', {src: v.image.src}]) : ['span']),
+	state.usersBlock.memo(v => v?.id ? "You're going!" : '')
+]
 
 const root = dom(['div.root',
   // authElement,
@@ -214,6 +268,7 @@ const root = dom(['div.root',
 		['h4', 'July 25, 2026, 7pm-9pm-ish'],
 		["h4", 'At BAAA! (Back Alley for Art & Architecture)'],
 		["h4", '300 Campbell Ave, Suite 114']],
+	youGoing,
 	['hr'],
 	['.message', 
 		['p', 'Hey there Toronto!'],
@@ -230,16 +285,8 @@ const root = dom(['div.root',
 		['p', "Add a block to  ", ['a', {href: 'https://www.are.na/toronto/rsvp-2026'}, 'this channel'],", mentioning that interested in presenting, or feel free to ", ['a', {href: 'mailto:info@if-m.works'}, 'reach out']," to us!"]
 	],
 	['hr'],
-	['h5', memo(() => 'Going ('+ RSVPBlockLength.value() +')', [RSVPBlockLength])],
-	['div', 
-		memo(() => 
-			['.images', ...RSVPBlocks.value().map(e => 
-				['img', {
-					src: e.image.src,
-					onclick: () => e?.metadata ? parseAndLoadDrawing(e) : null,
-				}])],
-		[RSVPBlocks])
-	],
+	guestList,
+	guestImages,
 	['.rsvp', {
 			authenticated: memo(() => state.isAuthenticated.value() 
 				? 'true' 
