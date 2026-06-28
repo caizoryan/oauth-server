@@ -18,6 +18,8 @@ export const CONFIG = {
   DRAWING_FILENAME: "drawing.jpeg",
 }
 
+if (window.location.href.includes("localhost")) CONFIG.CLIENT_URL+='Local'
+
 
 // ============================================================
 // 2. STATE MANAGEMENT

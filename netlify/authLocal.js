@@ -1,7 +1,7 @@
-const CLIENT_ID = "-JgPNEOtCHdrXq_GBCpX4aSYk-FtErljNqoGY51apLM";
-const CLIENT_SECRET = "gNOaJ_jP_MkCtDmMPbcBCJ2dYa71YmPgEKPxdie9s_c";
-const REDIRECT_URI = "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth";
-const CLIENT_URL = "https://rsvp.if-m.works"
+const CLIENT_ID = "7LdAwx2v-bKI_h8wbP0L2O-eFja3VujgHIHPk5S8-wY";
+const CLIENT_SECRET = "1303c7003860c62005a0a6c93d323555b9df40e6b7820f50b3a68e7426a15aa0";
+const REDIRECT_URI = "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/authLocal";
+const CLIENT_URL = "http://localhost:7222"
 
 const AUTHORIZATION_URL = "https://www.are.na/oauth/authorize";
 const TOKEN_URL = "https://api.are.na/v3/oauth/token";
