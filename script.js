@@ -7,9 +7,9 @@ import { createBlock } from './arena/createBlock.js'
 import { dom } from './dom.js'
 import { canvasEl } from './canvas.js'
 
-// ============================================================
-// 1. CONFIGURATION
-// ============================================================
+// xxx---------xxx----------xxx
+// +; CONFIGURATION
+// xxx---------xxx----------xxx
 export const CONFIG = {
   CLIENT_URL: "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth",
   API_BASE: "https://api.are.na/v3",
@@ -21,9 +21,9 @@ export const CONFIG = {
 if (window.location.href.includes("localhost")) CONFIG.CLIENT_URL+='Local'
 
 
-// ============================================================
-// 2. STATE MANAGEMENT
-// ============================================================
+// xxx---------xxx----------xxx
+// +; STATE MANAGEMENT
+// xxx---------xxx----------xxx
 let state = {
   isAuthenticated: reactive(false),
   statusType: reactive(""),
@@ -33,9 +33,9 @@ let state = {
 	usersBlock: reactive(null),
 }
 
-// ============================================================
-// 3. AUTH MODULE
-// ============================================================
+// xxx---------xxx----------xxx
+// +; AUTH MODULE
+// xxx---------xxx----------xxx
 
 function checkForToken() {
   const params = new URLSearchParams(window.location.search);
@@ -43,7 +43,7 @@ function checkForToken() {
   
   if (token) {
     if (token === "DENIED") {
-      console.log("denied");
+			notificationpopup("Login Failed", true)
       return null;
     }
     localStorage.setItem("arena_access_token", token);
@@ -89,9 +89,9 @@ async function fetchUserProfile(token) {
   }
 }
 
-// ============================================================
-// 4. ARENA MODULE
-// ============================================================
+// xxx---------xxx----------xxx
+// +; ARENA MODULE
+// xxx---------xxx----------xxx
 function findUserChannel(blocks) {
 	if (!state.userData.value()) return
   return blocks.find(e => e.user.id === state.userData.value().id);
@@ -99,18 +99,23 @@ function findUserChannel(blocks) {
 
 async function loadUserDrawing(userBlock) {
   if (userBlock?.metadata) {
-    try {
-      const parsed = parse(Object.values(userBlock.metadata));
-      setPoints(parsed);
-      Drawing.render_points(parsed, true);
-    } catch (err) {
-      console.error("Parse error:", err);
-    }
+		parseAndLoadDrawing(userBlock)
   }
+}
+
+function parseAndLoadDrawing(block){
+	try {
+		const parsed = parse(Object.values(block.metadata));
+		setPoints(parsed);
+		Drawing.render_points(parsed, true);
+	} catch (err) {
+		console.error("Parse error:", err);
+	}
 }
 
 state.blocks.memo(blocks => state.usersBlock.next(findUserChannel(blocks)))
 state.usersBlock.memo(block => (block && block.id) ? loadUserDrawing(block) : null)
+state.isAuthenticated.memo(is => is ? notificationpopup("Authenticated"):null)
 
 async function fetchBlocks(token){
   const res = await getChannelContents(CONFIG.CHANNEL_ID, token);
@@ -128,9 +133,6 @@ const RSVPBlocks = state.blocks.memo(blocks =>
 
 const RSVPBlockLength = memo(() => RSVPBlocks.value().length || 0, [RSVPBlocks])
 
-RSVPBlocks.subscribe(f => {
-	console.log(f)
-})
 
 async function uploadDrawing() {
   const token = checkForToken();
@@ -150,10 +152,35 @@ async function uploadDrawing() {
     console.error("Upload error:", err);
   }
 }
-// ============================================================
-// 5. UI MODULE
-// ============================================================
+// xxx---------xxx----------xxx
+// +; UI MODULE
+// xxx---------xxx----------xxx
 
+let notificationpopup = (msg, error = false) => {
+	msg = error ? '🚫 ' +msg : msg
+	let tag = '.notification' + (error ? '.error' : '')
+	let style = `
+	position: fixed;
+	right: -50vw;
+	opacity: 0;
+	bottom: 1em;
+	transition: 200ms;
+`
+
+	let d = dom(tag, {style}, msg)
+
+	document.querySelectorAll('.notification')
+		.forEach((e) => {
+			let b = parseFloat(e.style.bottom)
+			e.style.bottom = (b + 5) + 'em'
+		})
+
+	document.body.appendChild(d)
+
+	setTimeout(() => { d.style.right = '1em'; d.style.opacity = 1 }, 5)
+	setTimeout(() => { d.style.opacity = 0 }, error ? 6000 : 4500)
+	setTimeout(() => { d.remove() }, error ? 9500 : 8000)
+}
 const loginButton = ['button', { onclick: login }, 'Login with Are.na']
 const authElement = [
   '.auth',
@@ -180,17 +207,7 @@ const root = dom(['div.root',
 			['.images', ...RSVPBlocks.value().map(e => 
 				['img', {
 					src: e.image.src,
-					onclick: () => {
-							if (e?.metadata) {
-								try {
-									const parsed = parse(Object.values(e.metadata));
-									setPoints(parsed);
-									Drawing.render_points(parsed, true);
-								} catch (err) {
-									console.error("Parse error:", err);
-								}
-							}
-					},
+					onclick: () => e?.metadata ? parseAndLoadDrawing(e) : null,
 				}])],
 		[RSVPBlocks])
 	],
@@ -212,17 +229,9 @@ const root = dom(['div.root',
 
 const mount = () => document.body.appendChild(root);
 
-// ============================================================
-// 6. APP MODULE
-// ============================================================
-
-function setupAuthSubscriber() {
-  state.isAuthenticated.memo(isAuth => {
-    if (isAuth) {
-			fetchBlocks(checkForToken())
-    }
-  });
-}
+// xxx---------xxx----------xxx
+// +; APP MODULE
+// xxx---------xxx----------xxx
 
 async function init() {
   const token = checkForToken();
@@ -233,14 +242,12 @@ async function init() {
     state.isAuthenticated.next(false);
   }
   
-  mount();
-
 	fetchBlocks(checkForToken())
-  // setupAuthSubscriber();
+  mount();
 }
 
-// ============================================================
+// xxx---------xxx----------xxx
 // 7. ENTRY POINT
-// ============================================================
+// xxx---------xxx----------xxx
 
 init();
