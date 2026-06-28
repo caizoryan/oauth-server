@@ -67,6 +67,7 @@ body {
 	color: var(--col);
 	max-width: 450px;
 	margin: 4em auto;
+	padding-bottom: 4em;
 }
 
 h1 {

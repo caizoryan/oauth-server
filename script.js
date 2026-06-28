@@ -13,7 +13,8 @@ import { canvasEl } from './canvas.js'
 export const CONFIG = {
   CLIENT_URL: "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth",
   API_BASE: "https://api.are.na/v3",
-  CHANNEL_ID: "avatar-templates",
+  // CHANNEL_ID: "avatar-templates",
+  CHANNEL_ID: "rsvp-2026",
   MAX_METADATA_CHARS: 642,
   DRAWING_FILENAME: "drawing.jpeg",
 }
@@ -268,7 +269,7 @@ const youGoing = ['p.going',
 const root = dom(['div.root',
   // authElement,
 	['h1', 'Toronto Are.na Meetup'],
-	["h4", 'Hosted by IF Machine Works'],
+	["h4", 'Hosted by ', ['a', {href: 'https://if-m.works'}, 'IF Machine Works']],
 	['.info',
 		['h4', 'July 25, 2026, 7pm-9pm-ish'],
 		["h4", 'At BAAA! (Back Alley for Art & Architecture)'],

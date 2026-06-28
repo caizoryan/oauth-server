@@ -28,61 +28,91 @@ function createGradientStyle(axis, r, g, b) {
 		g: [`rgb(${r}, 0, ${b})`, `rgb(${r}, 255, ${b})`],
 		b: [`rgb(${r}, ${g}, 0)`, `rgb(${r}, ${g}, 255)`]
 	}
+
 	return `background: linear-gradient(to right, ${colors[axis][0]}, ${colors[axis][1]})`
 }
 
-let redSlider = reactive(5)
-let greenSlider = reactive(5)
-let blueSlider = reactive(5)
+let fakeRed = reactive(5)
+let red = reactive(5)
+let green = reactive(5)
+let blue = reactive(5)
 let tick = reactive(0)
 
 setTimeout(() => tick.next(e=>e+1), 10)
 
-function colorSlider(initialValue, max = 255, label, axis = null) {
+function colorSlider(initialValue, max, label, axis) {
 	let value = initialValue
-	let updates = []
+	let updateColor = (value) => {
+			if (axis == 'r') red.next(value)
+			if (axis == 'g') green.next(value)
+			if (axis == 'b') blue.next(value)
+	}
+
 	return {
-		el: memo(() => {
-			const r = redSlider.value()
-			const g = greenSlider.value()
-			const b = blueSlider.value()
-			const style = axis ? createGradientStyle(axis, r, g, b) : undefined
-			return [
+		el: [
 				'div',
 				['span.label', label],
 				['input', {
 					type: 'range',
 					max: max,
 					value: value,
-					style: style,
+					style: memo(() => {
+						const r = red.value()
+						const g = green.value()
+						const b = blue.value()
+						const style = createGradientStyle(axis, r, g, b) 
+						return style
+					}, [red, green, blue, tick]),
+					oninput: (e) => {
+						value = e.target.value
+						updateColor(value)
+					}
+				}],
+			],
+	}
+}
+
+function slider(initialValue, max = 255, label) {
+	let value = initialValue
+	let updates = []
+	return {
+		el: [
+				'div',
+				['span.label', label],
+				['input', {
+					type: 'range',
+					max: max,
+					value: value,
 					oninput: (e) => {
 						value = e.target.value
 						updates.forEach(fn => fn(value))
 					}
 				}],
 			]
-		}, axis ? [redSlider, greenSlider, blueSlider, tick] : []),
+		,  
 		value: () => value,
 		subscribe: (fn) => updates.push(fn)
 	}
 }
 
- redSlider = colorSlider(0, 255, 'R', 'r')
- greenSlider = colorSlider(55, 255, 'G', 'g')
- blueSlider = colorSlider(255, 255, 'B', 'b')
-const brushSizeSlider = colorSlider(8, 155, 'WIDTH')
+ fakeRed = colorSlider(2, 255, 'R', 'r')
+ let redSlider = colorSlider(2, 255, 'R', 'r')
+ let greenSlider = colorSlider(55, 255, 'G', 'g')
+ let blueSlider = colorSlider(255, 255, 'B', 'b')
+const brushSizeSlider = slider(8, 155, 'WIDTH')
 
 const colorPreview = memo(() => {
-	const r = redSlider.value()
-	const g = greenSlider.value()
-	const b = blueSlider.value()
-	return ['.color-preview', { style: `
+	const r = red.value()
+	const g = green.value()
+	const b = blue.value()
+	return ['.color-preview', { 
+		style: `
 background: rgb(${r}, ${g}, ${b});
 margin-right: 1em;
 ` }]
-}, [redSlider, greenSlider, blueSlider])
+}, [red, green, blue])
 
-const getCurrentColor = () => `rgb(${redSlider.value()}, ${greenSlider.value()}, ${blueSlider.value()})`
+const getCurrentColor = () => `rgb(${red.value()}, ${green.value()}, ${blue.value()})`
 
 // ============== STROKE DATA LAYER ==============
 function new_stroke(color, size) {
