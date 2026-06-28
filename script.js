@@ -95,9 +95,9 @@ async function fetchUserProfile(token) {
 // xxx---------xxx----------xxx
 // +; ARENA MODULE
 // xxx---------xxx----------xxx
-function findUserChannel(blocks) {
+function findUserBlock(blocks) {
 	if (!state.userData.value()) return
-  return blocks.find(e => e.user.id === state.userData.value().id);
+  return blocks.find(e => e.user.id === state.userData.value().id && e.type == 'Image' && e.metadata);
 }
 
 async function loadUserDrawing(userBlock) {
@@ -116,8 +116,12 @@ function parseAndLoadDrawing(block){
 	}
 }
 
-state.usersBlock.memo(block => (block && block.id && block.type == 'Image') ? loadUserDrawing(block) : null)
+state.usersBlock.memo(block => (block && block.id ) ? loadUserDrawing(block) : null)
 state.isAuthenticated.memo(is => is ? notificationpopup("Authenticated"):null)
+state.blocks.subscribe(blocks => {
+	if (blocks && Array.isArray(blocks))
+	state.usersBlock.next(findUserBlock(blocks))
+})
 
 async function fetchBlocks(token){
   const res = await getChannelContents(CONFIG.CHANNEL_ID, token);
