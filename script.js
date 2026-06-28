@@ -13,7 +13,7 @@ import { canvasEl } from './canvas.js'
 export const CONFIG = {
   CLIENT_URL: "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth",
   API_BASE: "https://api.are.na/v3",
-  CHANNEL_ID: "rsvp-test-d9r1hsyg5ie",
+  CHANNEL_ID: "avatar-templates",
   MAX_METADATA_CHARS: 642,
   DRAWING_FILENAME: "drawing.jpeg",
 }
@@ -93,6 +93,7 @@ async function fetchUserProfile(token) {
 // 4. ARENA MODULE
 // ============================================================
 function findUserChannel(blocks) {
+	if (!state.userData.value()) return
   return blocks.find(e => e.user.id === state.userData.value().id);
 }
 
@@ -176,7 +177,21 @@ const root = dom(['div.root',
 	['div', memo(() => 'Going ('+ RSVPBlockLength.value() +')', [RSVPBlockLength])],
 	['div', 
 		memo(() => 
-			['.images', ...RSVPBlocks.value().map(e => ['img', {src: e.image.src}])],
+			['.images', ...RSVPBlocks.value().map(e => 
+				['img', {
+					src: e.image.src,
+					onclick: () => {
+							if (e?.metadata) {
+								try {
+									const parsed = parse(Object.values(e.metadata));
+									setPoints(parsed);
+									Drawing.render_points(parsed, true);
+								} catch (err) {
+									console.error("Parse error:", err);
+								}
+							}
+					},
+				}])],
 		[RSVPBlocks])
 	],
 	['.rsvp', {
@@ -189,6 +204,7 @@ const root = dom(['div.root',
 		canvasEl,
 		rsvpButton,
 		['.overlay.centered', 
+			['.shield'],
 			['.box.centered', loginButton ]],
 	],
 
@@ -218,7 +234,9 @@ async function init() {
   }
   
   mount();
-  setupAuthSubscriber();
+
+	fetchBlocks(checkForToken())
+  // setupAuthSubscriber();
 }
 
 // ============================================================

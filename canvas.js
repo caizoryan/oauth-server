@@ -125,7 +125,7 @@ export const getTinyStroke = () => {
 
 	encoded.forEach(e => {
 		// console.log(e.length)
-		if (e.length > CONFIG.MAX_METADATA_CHARS) console.error("BRUh, too big!?")
+		if (e.length > CONFIG.MAX_METADATA_CHARS) console.error("BRUh, too big!?", e.length)
 	})
 
 	return encoded.reduce((acc, e, i) => (acc[i] = e, acc), {})
@@ -191,6 +191,7 @@ export const Drawing = {
 	},
 
 	render_points(points, slow = false) {
+		console.log(points)
 		Drawing.cancelAnimation()
 		Drawing.clear()
 		if (!slow) points.forEach(stroke => Drawing.draw_stroke(stroke))
@@ -288,7 +289,8 @@ const Input = {
 		let last = last_stroke()
 
 		let threshold = 0.05
-		while (last.points.length > 100) {
+		console.log(last.points.length)
+		while (last.points.length > 98) {
 			console.log('last points length: ', last.points.length, 'COMPRESSING AT: ', threshold)
 			let compressed = compress_stroke(last.points, threshold)
 			console.log('compressed length: ', compressed.length)
@@ -297,7 +299,7 @@ const Input = {
 		}
 
 		Drawing.render_points(state.points.value())
-		getTinyStroke()
+		console.log(getTinyStroke())
 	},
 
 	bindEvents(canvas) {

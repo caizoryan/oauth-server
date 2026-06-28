@@ -107,8 +107,19 @@
 			left: 0;
 			width: 100%;
 			height: 100%;
+		}
+
+		.shield {
+			position: absolute;
+			z-index: 0;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
 			background-color: var(--col);
-			opacity: .90;
+			opacity: .75;
+			border: 2px solid #1114;
+			box-shadow: 0 0 25px 5px #2222;
 		}
 
 		.centered {
@@ -118,15 +129,15 @@
 		}
 
 		.overlay .box{
-			/* width: 250px; */
-			/* height: 250px; */
 			background-color: #fff;
 			font-size: 1.5em;
+			z-index: 2;
 		}
 
 		.box > * {
-			padding: .25em;
-			margin: .25em;
+			padding: .75em;
+			box-shadow: 0 0 45px 5px #2222;
+			/* margin: .25em; */
 		}
 
 		.rsvp-btn {

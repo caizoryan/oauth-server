@@ -6,12 +6,12 @@
 export function parse(strings) {
   return strings.map(str => {
     // Extract RGB (first 9 chars)
-    const r = parseInt(str.slice(0, 3), 10);
-    const g = parseInt(str.slice(3, 6), 10);
-    const b = parseInt(str.slice(6, 9), 10);
+    const r = parseInt(str.slice(0, 3));
+    const g = parseInt(str.slice(3, 6));
+    const b = parseInt(str.slice(6, 9));
     
     // Extract stroke width (next 3 chars)
-    const strokeWidth = parseInt(str.slice(9, 12), 10);
+    const strokeWidth = parseInt(str.slice(9, 12));
     
     // Extract points (remaining chars, 6 digits per point: 3 for x, 3 for y)
     const pointsStr = str.slice(12);
