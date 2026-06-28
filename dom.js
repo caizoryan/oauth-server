@@ -109,8 +109,6 @@ export let dom = (tag, ...contents) => {
             ? document.createElementNS("http://www.w3.org/2000/svg", el)
             : document.createElement(el);
 
-
-	if (classes.includes("list-item")){console.log("items",contents)}
 	classes.forEach((c) => doc.classList.add(c))
 	id ? doc.id = id : null
 

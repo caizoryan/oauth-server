@@ -180,6 +180,15 @@ button {
 	justify-content: center;
 	align-items: center;
 	cursor: pointer;
+	touch-action: manipulation;
+
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
 }
 
 button[active="true"] {
@@ -191,7 +200,7 @@ button[active="true"] {
 	display: grid;
 	padding: 10px 0;
 	grid-template-columns: 1fr 1fr;
-	gridGap: 50px
+	/* gridGap: 50px */
 }
 
 .container {
@@ -299,6 +308,7 @@ input[type="range"] {
 
 .notification {
 	z-index: 9819945129;
+	min-width: 300px;
 	width: 25vw;
 	max-width: 400px;
 	color: var(--col);

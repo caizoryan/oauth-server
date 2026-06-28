@@ -155,18 +155,22 @@ async function uploadDrawing() {
 		// if block exists and this got uploaded, remove old block
     console.log(res);
 		let userBlock = state.usersBlock.value()
-		if (userBlock?.id){
+		if (res.id && userBlock?.id){
 			console.log('Severing',userBlock.connection.id)
 			fetch("https://api.are.na/v3/connections/"+userBlock.connection.id, {
 				method: 'DELETE',
 				headers: {
 					'Authorization': `Bearer ${token}`,
 				}
-			})
+			}).then(res => notificationpopup("Updated RSVP!"))
 			// disconnect it
 		}
+		else if (res.id) {
+			notificationpopup("RSVP'd! See u soon!")
+		}
+
+		state.uploadingInProgress.next(false)
 		setTimeout(() => {
-			state.uploadingInProgress.next(false)
 			fetchBlocks(token)
 		}, 2500)
   } catch (err) {
@@ -256,6 +260,7 @@ const guestImages =  ['div',
 	]
 
 const youGoing = ['p.going', 
+	{style: state.usersBlock.memo(v => v?.id ? '' : 'display: none') },
 	state.usersBlock.memo(v => v?.id ? dom(['img', {src: v.image.src}]) : ['span']),
 	state.usersBlock.memo(v => v?.id ? "You're going!" : '')
 ]
