@@ -3,15 +3,6 @@ const CLIENT_SECRET = "gNOaJ_jP_MkCtDmMPbcBCJ2dYa71YmPgEKPxdie9s_c";
 const REDIRECT_URI = "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth";
 const CLIENT_URL = "https://rsvp.if-m.works"
 
-const AUTHORIZATION_URL = "https://www.are.na/oauth/authorize";
-const TOKEN_URL = "https://api.are.na/v3/oauth/token";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
-
 export async function handler(event, context) {
   if (event.httpMethod === "OPTIONS") {
     return {
