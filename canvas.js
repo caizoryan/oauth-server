@@ -218,7 +218,6 @@ export const Drawing = {
 	},
 
 	render_points(points, slow = false) {
-		console.log(points)
 		Drawing.cancelAnimation()
 		Drawing.clear()
 		if (!slow) points.forEach(stroke => Drawing.draw_stroke(stroke))
