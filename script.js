@@ -28,6 +28,7 @@ let state = {
   isAuthenticated: reactive(false),
   statusType: reactive(""),
   userData: reactive(null),
+	uploadingInProgress: reactive(false),
   isLoading: reactive(false),
 	blocks: reactive([]),
 	usersBlock: reactive(null),
@@ -120,16 +121,17 @@ state.isAuthenticated.memo(is => is ? notificationpopup("Authenticated"):null)
 async function fetchBlocks(token){
   const res = await getChannelContents(CONFIG.CHANNEL_ID, token);
 	if (res && res.data) {
+		console.log(res.data)
 		state.blocks.next(res.data)
 	}
 }
 
-const RSVPBlocks = state.blocks.memo(blocks => 
-  blocks.filter(block => 
+const RSVPBlocks = state.blocks.memo(blocks => {
+  return blocks.filter(block => 
     block.type === 'Image' 
 			&& block.metadata
 			&& block.description?.plain.toLowerCase().includes('rsvp')
-));
+)});
 
 const RSVPBlockLength = memo(() => RSVPBlocks.value().length || 0, [RSVPBlocks])
 
@@ -139,6 +141,7 @@ async function uploadDrawing() {
   if (!token) return;
   
   try {
+		state.uploadingInProgress.next(true)
     const imageUrl = await uploadImage(Drawing.canvas, CONFIG.DRAWING_FILENAME, token);
     const res = await createBlock({
       value: imageUrl,
@@ -147,7 +150,12 @@ async function uploadDrawing() {
       metadata: getTinyStroke(),
       channel_id: CONFIG.CHANNEL_ID,
     }, token);
+
     console.log(res);
+		state.uploadingInProgress.next(false)
+		setTimeout(() => {
+			fetchBlocks(token)
+		}, 2500)
   } catch (err) {
     console.error("Upload error:", err);
   }
@@ -191,17 +199,38 @@ const authElement = [
   ),
 ];
 
-const rsvpButton =  ['button.rsvp-btn', { onclick: uploadDrawing }, 'RSVP'];
+const rsvpButton =  [
+	'button.rsvp-btn', 
+	{ 
+		loading: state.uploadingInProgress,
+		onclick: uploadDrawing },
+	'RSVP'];
 
 const root = dom(['div.root',
   // authElement,
 	['h1', 'Toronto Are.na Meetup'],
 	["h4", 'Hosted by IF Machine Works'],
-	['h4', 'July 25, 2026, 7pm-9pm-ish'],
-	["h4", 'At BAAA! (Back Alley for Art & Architecture)'],
-	["h4", '300 Campbell Ave, Suite 114'],
+	['.info',
+		['h4', 'July 25, 2026, 7pm-9pm-ish'],
+		["h4", 'At BAAA! (Back Alley for Art & Architecture)'],
+		["h4", '300 Campbell Ave, Suite 114']],
 	['hr'],
-	['div', memo(() => 'Going ('+ RSVPBlockLength.value() +')', [RSVPBlockLength])],
+	['.message', 
+		['p', 'Hey there Toronto!'],
+		['p', 'We are hosting an Are.na Meetup this summer. You can RSVP below by ', ['button.chill', 'Logging in to Are.na'], ' and drawing an Avatar!'],
+		['p', "On the day we'll have some channel walkthroughs, presentations and some time to chat and hangout! We'll have some snacks and refreshment but feel free to bring more too!"],
+
+		['hr'],
+		['p', "If you are interested in either →"],
+		['ul', 
+			['li', 'Doing a channel walkthrough'],
+			['li', 'Presenting things you made with Are.na API '],
+			['li', 'Or anything are.na related']
+		],
+		['p', "Add a block to  ", ['a', {href: 'https://www.are.na/toronto/rsvp-2026'}, 'this channel'],", mentioning that interested in presenting, or feel free to ", ['a', {href: 'mailto:info@if-m.works'}, 'reach out']," to us!"]
+	],
+	['hr'],
+	['h5', memo(() => 'Going ('+ RSVPBlockLength.value() +')', [RSVPBlockLength])],
 	['div', 
 		memo(() => 
 			['.images', ...RSVPBlocks.value().map(e => 
