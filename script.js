@@ -1,83 +1,63 @@
-// Are.na OAuth client-side logic
-import {dom} from './dom.js'
 import { reactive, memo } from './chowk.js'
-import { 
-	Drawing, canvasEl, getTinyStroke,  setPoints 
-} from './canvas.js';
-import { uploadImage } from './arena/uploadImage.js';
-import { createBlock } from './arena/createBlock.js';
-import { getChannel, getChannelContents } from './arena/channel.js';
-import { parse } from './tiny_stroke/parser.js';
+import { getChannelContents } from './arena/channel.js'
+import { parse } from './tiny_stroke/parser.js'
+import { Drawing, setPoints, getTinyStroke } from './canvas.js'
+import { uploadImage } from './arena/uploadImage.js'
+import { createBlock } from './arena/createBlock.js'
+import { dom } from './dom.js'
+import { canvasEl } from './canvas.js'
 
-let drawCanvas = Drawing.canvas
-let render_points = Drawing.render_points
+// ============================================================
+// 1. CONFIGURATION
+// ============================================================
+export const CONFIG = {
+  CLIENT_URL: "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth",
+  API_BASE: "https://api.are.na/v3",
+  CHANNEL_ID: "rsvp-test-d9r1hsyg5ie",
+  MAX_METADATA_CHARS: 642,
+  DRAWING_FILENAME: "drawing.jpeg",
+}
 
-const CLIENT_URL = "https://kaleidoscopic-druid-9d3ee7.netlify.app/.netlify/functions/auth";
-const API_BASE = "https://api.are.na/v3";
 
-// for 50 kv pairs on are.na metadata, can't have each string longer than 642 chars
-export const MAX_METADATA_CHARS = 642
+// ============================================================
+// 2. STATE MANAGEMENT
+// ============================================================
 
-// Reactive state
+
 let state = {
   isAuthenticated: reactive(false),
-  statusType: reactive(""), // "", "success", "error"
+  statusType: reactive(""),
   userData: reactive(null),
-  isLoading: reactive(false)
-};
+  isLoading: reactive(false),
+	blocks: reactive([]),
+	usersBlock: reactive(null),
 
-const auth = ['.auth',
-	memo(() => state.isAuthenticated.value() 
-		? ['span', 'Logged in as: ', ['strong',state.userData.memo(e => e ? e.name : '')]]
-		: ['button', { onclick: login }, 'Login'],
-		[state.isAuthenticated]),
-]
+}
 
+// ============================================================
+// 3. AUTH MODULE
+// ============================================================
 
-const root = dom(['div.root', 
-	auth ,
-	canvasEl,
-	['button', {
-		onclick: () => {
-			uploadImage(drawCanvas, 'drawig.jpeg', checkForToken())
-				.then(res => {
-					createBlock({
-						value: res, 
-						title: "TESTING",
-						metadata: getTinyStroke(),
-						channel_id: 'rsvp-test-d9r1hsyg5ie'
-					}, checkForToken())
-					.then(res => console.log(res))
-				})
-		} 
-	}, 'upload']
-]);
-
-document.body.appendChild(root);
-
-// Check for token in URL (callback from OAuth)
 function checkForToken() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
   
   if (token) {
-		if (token=='DENIED') {
-			console.log('denied')
-		} else {
-			localStorage.setItem("arena_access_token", token);
-			window.history.replaceState({}, "", window.location.pathname);
-			return token;
-		}
+    if (token === "DENIED") {
+      console.log("denied");
+      return null;
+    }
+    localStorage.setItem("arena_access_token", token);
+    window.history.replaceState({}, "", window.location.pathname);
+    return token;
   }
   
   return localStorage.getItem("arena_access_token");
 }
 
-// Initiate OAuth login
 async function login() {
-  
   try {
-    const response = await fetch(`${CLIENT_URL}/?action=auth&scope=write`);
+    const response = await fetch(`${CONFIG.CLIENT_URL}/?action=auth&scope=write`);
     const data = await response.json();
     
     if (data.authorization_url) {
@@ -86,22 +66,20 @@ async function login() {
       throw new Error("No authorization URL received");
     }
   } catch (error) {
-		console.error("ERROR: ", error)
+    console.error("ERROR:", error);
   }
 }
 
-// Fetch user profile from Are.na API
 async function fetchUserProfile(token) {
   try {
-    const response = await fetch(`${API_BASE}/me`, {
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
+    const response = await fetch(`${CONFIG.API_BASE}/me`, {
+      headers: { "Authorization": `Bearer ${token}` },
     });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch profile: ${response.status}`);
     }
+    
     const userData = await response.json();
     state.userData.next(userData);
     state.isAuthenticated.next(true);
@@ -110,46 +88,121 @@ async function fetchUserProfile(token) {
     localStorage.removeItem("arena_access_token");
     state.isAuthenticated.next(false);
   }
-
-	
 }
 
-state.isAuthenticated.memo(e => {
-	if (e){
-		getChannelContents('rsvp-test-d9r1hsyg5ie', checkForToken())
-			.then(res => {
-				let userBlock = findUserChannel(res.data)
-				if (userBlock){
-					// try parse metadata
-					if(userBlock.metadata ){
-						try {
-							let parsed = parse(Object.values(userBlock.metadata))
-							setPoints(parsed)
-							render_points(parsed, true)
-						}
-						catch(err){
-							console.log("RERRO", err)
-						}
-					}
-				}
-			})
-	}
-})
-
-function findUserChannel(blocks){
-	let found = blocks.find(e => e.user.id == state.userData.value().id)
-	return found
+// ============================================================
+// 4. ARENA MODULE
+// ============================================================
+function findUserChannel(blocks) {
+  return blocks.find(e => e.user.id === state.userData.value().id);
 }
 
-// Initialize
-function init() {
-  const token = checkForToken();
-  if (token) {
-    fetchUserProfile(token);
-  } else {
-    state.isAuthenticated.next(false);
+async function loadUserDrawing(userBlock) {
+  if (userBlock?.metadata) {
+    try {
+      const parsed = parse(Object.values(userBlock.metadata));
+      setPoints(parsed);
+      Drawing.render_points(parsed, true);
+    } catch (err) {
+      console.error("Parse error:", err);
+    }
   }
 }
 
-// Run on page load
+state.blocks.memo(blocks => state.usersBlock.next(findUserChannel(blocks)))
+state.usersBlock.memo(block => (block && block.id) ? loadUserDrawing(block) : null)
+
+async function fetchBlocks(token){
+  const res = await getChannelContents(CONFIG.CHANNEL_ID, token);
+	if (res && res.data) {
+		state.blocks.next(res.data)
+	}
+}
+
+async function uploadDrawing() {
+  const token = checkForToken();
+  if (!token) return;
+  
+  try {
+    const imageUrl = await uploadImage(Drawing.canvas, CONFIG.DRAWING_FILENAME, token);
+    const res = await createBlock({
+      value: imageUrl,
+      // title: "TESTING",
+      metadata: getTinyStroke(),
+      channel_id: CONFIG.CHANNEL_ID,
+    }, token);
+    console.log(res);
+  } catch (err) {
+    console.error("Upload error:", err);
+  }
+}
+// ============================================================
+// 5. UI MODULE
+// ============================================================
+
+const loginButton = ['button', { onclick: login }, 'Login with Are.na']
+const authElement = [
+  '.auth',
+  memo(() => state.isAuthenticated.value()
+    ? ['.login', 'Logged in: ', ['strong', state.userData.memo(e => e?.name || '')]]
+    : loginButton,
+    [state.isAuthenticated]
+  ),
+];
+
+const rsvpButton =  ['button.rsvp-btn', { onclick: uploadDrawing }, 'RSVP'];
+
+const root = dom(['div.root',
+  // authElement,
+	['h1', 'Toronto Are.na Meetup'],
+	["h4", 'hosted by IF Machine Works'],
+	['h4', 'July 25, 2026, 7pm-9pm-ish'],
+	["h4", 'At BAAA! (Back Alley for Art & Architecture)'],
+	["h4", '300 Campbell Ave, Suite 114'],
+	['.rsvp', {
+			authenticated: memo(() => state.isAuthenticated.value() 
+				? 'true' 
+				: 'false',
+				[state.isAuthenticated])
+	},
+		canvasEl,
+		rsvpButton,
+		['.overlay.centered', 
+			['.box.centered', loginButton ]],
+	],
+	['div', 'Going ('+ 3 +')']
+
+]);
+
+const mount = () => document.body.appendChild(root);
+
+// ============================================================
+// 6. APP MODULE
+// ============================================================
+
+function setupAuthSubscriber() {
+  state.isAuthenticated.memo(isAuth => {
+    if (isAuth) {
+			fetchBlocks(checkForToken())
+    }
+  });
+}
+
+async function init() {
+  const token = checkForToken();
+  
+  if (token) {
+    await fetchUserProfile(token);
+  } else {
+    state.isAuthenticated.next(false);
+  }
+  
+  mount();
+  setupAuthSubscriber();
+}
+
+// ============================================================
+// 7. ENTRY POINT
+// ============================================================
+
 init();

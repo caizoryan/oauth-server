@@ -2,8 +2,9 @@
 import {dom} from './dom.js'
 import { reactive, memo } from './chowk.js'
 import { encode } from './tiny_stroke/parser.js'
-import { MAX_METADATA_CHARS } from './script.js';
+import { CONFIG } from './script.js';
 import { Keymanager } from './keymanager.js';
+
 
 // ============== CONSTANTS ==============
 const SCALE = window.innerWidth < 500 ? window.innerWidth / 500 : 1
@@ -48,7 +49,7 @@ function colorSlider(initialValue, max = 255, label, axis = null) {
 			const style = axis ? createGradientStyle(axis, r, g, b) : undefined
 			return [
 				'div',
-				['span', label],
+				['span.label', label],
 				['input', {
 					type: 'range',
 					max: max,
@@ -69,16 +70,15 @@ function colorSlider(initialValue, max = 255, label, axis = null) {
  redSlider = colorSlider(0, 255, 'R', 'r')
  greenSlider = colorSlider(55, 255, 'G', 'g')
  blueSlider = colorSlider(255, 255, 'B', 'b')
-const brushSizeSlider = colorSlider(4, 15, 'Brush Size')
+const brushSizeSlider = colorSlider(4, 15, 'WIDTH')
 
 const colorPreview = memo(() => {
 	const r = redSlider.value()
 	const g = greenSlider.value()
 	const b = blueSlider.value()
-	return ['div', { style: `
+	return ['.color-preview', { style: `
 background: rgb(${r}, ${g}, ${b});
-width: 100px;
-height: 100px;
+margin-right: 1em;
 ` }]
 }, [redSlider, greenSlider, blueSlider])
 
@@ -125,7 +125,7 @@ export const getTinyStroke = () => {
 
 	encoded.forEach(e => {
 		// console.log(e.length)
-		if (e.length > MAX_METADATA_CHARS) console.error("BRUh, too big!?")
+		if (e.length > CONFIG.MAX_METADATA_CHARS) console.error("BRUh, too big!?")
 	})
 
 	return encoded.reduce((acc, e, i) => (acc[i] = e, acc), {})
@@ -145,8 +145,8 @@ export const Drawing = {
 	init(canvasEl) {
 		Drawing.canvas = canvasEl
 		Drawing.ctx = canvasEl.getContext('2d')
-		Drawing.canvas.width = 500
-		Drawing.canvas.height = 500
+		Drawing.canvas.width = 400
+		Drawing.canvas.height = 400
 		Drawing.clear()
 	},
 
@@ -231,6 +231,8 @@ function redo() {
 		Drawing.render_points(state.points.value())
 	}
 }
+
+const play = () => Drawing.render_points(state.points.value(), true)
 
 // ============== EVENT HANDLERS ==============
 const Input = {
@@ -319,6 +321,7 @@ window.addEventListener('keydown', (e) => keys.event(e))
 
 // ============== UI BUILDING ==============
 const controls = ['.controls',
+	colorPreview,
 	['#sliders',
 		redSlider.el,
 		greenSlider.el,
@@ -327,12 +330,12 @@ const controls = ['.controls',
 	],
 
 	// ['.color-preview', 
-	colorPreview,
 ]
 
-let undoredo = ['#buttons',
+let actionbuttons = ['#buttons',
 	['button', { onclick: undo }, '↺'],
-	['button', { onclick: redo }, '↻']
+	['button', { onclick: redo }, '↻'],
+	['button', { onclick: play }, '▶︎']
 ]
 
 const strokeCount = memo(()=> ['span.strokes', state.points.value().length+"", " / 50 strokes"], [state.points])
@@ -344,9 +347,9 @@ if (window.innerWidth < 500) {
 	drawCanvas.style.transform = `scale(${SCALE})`
 }
 
-export const canvasEl = dom(['.rsvp-container',
+export const canvasEl = dom(['.container',
 	drawCanvas,
-	['.bar', undoredo, strokeCount,],
+	['.bar', actionbuttons, strokeCount,],
 	controls,
 ])
 
