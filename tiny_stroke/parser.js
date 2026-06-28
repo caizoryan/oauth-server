@@ -10,11 +10,11 @@ export function parse(strings) {
     const g = parseInt(str.slice(3, 6), 10);
     const b = parseInt(str.slice(6, 9), 10);
     
-    // Extract stroke width (next 2 chars)
-    const strokeWidth = parseInt(str.slice(9, 11), 10);
+    // Extract stroke width (next 3 chars)
+    const strokeWidth = parseInt(str.slice(9, 12), 10);
     
     // Extract points (remaining chars, 6 digits per point: 3 for x, 3 for y)
-    const pointsStr = str.slice(11);
+    const pointsStr = str.slice(12);
     const points = [];
     
     for (let i = 0; i < pointsStr.length-5; i += 6) {
@@ -51,7 +51,7 @@ export function encode(strokes) {
       r.toString().padStart(3, '0') +
       g.toString().padStart(3, '0') +
       b.toString().padStart(3, '0') +
-      stroke.strokeWidth.toString().padStart(2, '0');
+      stroke.strokeWidth.toString().padStart(3, '0');
     
     // Add points
     for (const [x, y] of stroke.points) {
@@ -62,4 +62,3 @@ export function encode(strokes) {
     return str;
   }).slice(0,50);
 }
-

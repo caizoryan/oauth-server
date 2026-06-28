@@ -24,8 +24,6 @@ if (window.location.href.includes("localhost")) CONFIG.CLIENT_URL+='Local'
 // ============================================================
 // 2. STATE MANAGEMENT
 // ============================================================
-
-
 let state = {
   isAuthenticated: reactive(false),
   statusType: reactive(""),
@@ -33,7 +31,6 @@ let state = {
   isLoading: reactive(false),
 	blocks: reactive([]),
 	usersBlock: reactive(null),
-
 }
 
 // ============================================================
@@ -121,6 +118,19 @@ async function fetchBlocks(token){
 	}
 }
 
+const RSVPBlocks = state.blocks.memo(blocks => 
+  blocks.filter(block => 
+    block.type === 'Image' 
+			&& block.metadata
+			&& block.description?.plain.toLowerCase().includes('rsvp')
+));
+
+const RSVPBlockLength = memo(() => RSVPBlocks.value().length || 0, [RSVPBlocks])
+
+RSVPBlocks.subscribe(f => {
+	console.log(f)
+})
+
 async function uploadDrawing() {
   const token = checkForToken();
   if (!token) return;
@@ -129,7 +139,8 @@ async function uploadDrawing() {
     const imageUrl = await uploadImage(Drawing.canvas, CONFIG.DRAWING_FILENAME, token);
     const res = await createBlock({
       value: imageUrl,
-      // title: "TESTING",
+      title: state.userData.value().name.split(" ")[0],
+			description: 'rsvp',
       metadata: getTinyStroke(),
       channel_id: CONFIG.CHANNEL_ID,
     }, token);
@@ -157,22 +168,29 @@ const rsvpButton =  ['button.rsvp-btn', { onclick: uploadDrawing }, 'RSVP'];
 const root = dom(['div.root',
   // authElement,
 	['h1', 'Toronto Are.na Meetup'],
-	["h4", 'hosted by IF Machine Works'],
+	["h4", 'Hosted by IF Machine Works'],
 	['h4', 'July 25, 2026, 7pm-9pm-ish'],
 	["h4", 'At BAAA! (Back Alley for Art & Architecture)'],
 	["h4", '300 Campbell Ave, Suite 114'],
+	['hr'],
+	['div', memo(() => 'Going ('+ RSVPBlockLength.value() +')', [RSVPBlockLength])],
+	['div', 
+		memo(() => 
+			['.images', ...RSVPBlocks.value().map(e => ['img', {src: e.image.src}])],
+		[RSVPBlocks])
+	],
 	['.rsvp', {
 			authenticated: memo(() => state.isAuthenticated.value() 
 				? 'true' 
 				: 'false',
 				[state.isAuthenticated])
 	},
+		['h2', "Draw Your Avatar"],
 		canvasEl,
 		rsvpButton,
 		['.overlay.centered', 
 			['.box.centered', loginButton ]],
 	],
-	['div', 'Going ('+ 3 +')']
 
 ]);
 

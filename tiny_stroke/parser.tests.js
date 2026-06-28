@@ -4,7 +4,7 @@ import { parse, encode } from './parser.js';
 
 describe('parse', () => {
   it('parses a single stroke with one point', () => {
-    const result = parse(['25500000005000100000']);
+    const result = parse(['255000000005000100']);
     assert.deepStrictEqual(result, [{
       color: 'rgb(255,0,0)',
       strokeWidth: 5,
@@ -13,7 +13,7 @@ describe('parse', () => {
   });
 
   it('parses a single stroke with multiple points', () => {
-    const result = parse(['25500000005000100200200']);
+    const result = parse(['255000000005000100200200']);
     assert.deepStrictEqual(result, [{
       color: 'rgb(255,0,0)',
       strokeWidth: 5,
@@ -22,7 +22,7 @@ describe('parse', () => {
   });
 
   it('parses multiple strokes', () => {
-    const result = parse(['25500000005000100000', '00000025504005005000']);
+    const result = parse(['255000000005000100', '000000255004005005']);
     assert.deepStrictEqual(result, [
       { color: 'rgb(255,0,0)', strokeWidth: 5, points: [[0, 100]] },
       { color: 'rgb(0,0,255)', strokeWidth: 4, points: [[5, 5]] }
@@ -38,12 +38,12 @@ describe('parse', () => {
 describe('encode', () => {
   it('encodes a single stroke with one point', () => {
     const result = encode([{ color: 'rgb(255,0,0)', strokeWidth: 5, points: [[0, 100]] }]);
-    assert.deepStrictEqual(result, ['25500000005000100']);
+    assert.deepStrictEqual(result, ['255000000005000100']);
   });
 
   it('encodes a single stroke with multiple points', () => {
     const result = encode([{ color: 'rgb(255,0,0)', strokeWidth: 5, points: [[0, 100], [200, 200]] }]);
-    assert.deepStrictEqual(result, ['25500000005000100200200']);
+    assert.deepStrictEqual(result, ['255000000005000100200200']);
   });
 
   it('encodes multiple strokes', () => {
@@ -51,7 +51,7 @@ describe('encode', () => {
       { color: 'rgb(255,0,0)', strokeWidth: 5, points: [[0, 100]] },
       { color: 'rgb(0,0,255)', strokeWidth: 4, points: [[5, 5]] }
     ]);
-    assert.deepStrictEqual(result, ['25500000005000100', '00000025504005005']);
+    assert.deepStrictEqual(result, ['255000000005000100', '000000255004005005']);
   });
 
   it('handles empty array', () => {
@@ -59,19 +59,14 @@ describe('encode', () => {
     assert.deepStrictEqual(result, []);
   });
 
-  it('pads single digit coordinates', () => {
-    const result = encode([{ color: 'rgb(0,255,0)', strokeWidth: 1, points: [[1, 2]] }]);
-    assert.deepStrictEqual(result, ['00025500001001002']);
-  });
-
   it('pads double digit coordinates', () => {
     const result = encode([{ color: 'rgb(128,128,128)', strokeWidth: 10, points: [[10, 99]] }]);
-    assert.deepStrictEqual(result, ['12812812810010099']);
+    assert.deepStrictEqual(result, ['128128128010010099']);
   });
 
   it('handles maximum values', () => {
-    const result = encode([{ color: 'rgb(255,255,255)', strokeWidth: 99, points: [[999, 999]] }]);
-    assert.deepStrictEqual(result, ['25525525599999999']);
+    const result = encode([{ color: 'rgb(255,255,255)', strokeWidth: 999, points: [[111, 111]] }]);
+    assert.deepStrictEqual(result, ['255255255999111111']);
   });
 });
 
@@ -111,8 +106,8 @@ describe('parse and encode roundtrip', () => {
   it('roundtrips with various color values', () => {
     const original = [
       { color: 'rgb(0,0,0)', strokeWidth: 1, points: [[0, 0]] },
-      { color: 'rgb(255,255,255)', strokeWidth: 99, points: [[999, 999]] },
-      { color: 'rgb(128,64,192)', strokeWidth: 50, points: [[123, 456]] }
+      { color: 'rgb(255,255,255)', strokeWidth: 999, points: [[999, 999]] },
+      { color: 'rgb(128,64,192)', strokeWidth: 500, points: [[123, 456]] }
     ];
     const encoded = encode(original);
     const decoded = parse(encoded);

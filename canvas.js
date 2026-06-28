@@ -70,7 +70,7 @@ function colorSlider(initialValue, max = 255, label, axis = null) {
  redSlider = colorSlider(0, 255, 'R', 'r')
  greenSlider = colorSlider(55, 255, 'G', 'g')
  blueSlider = colorSlider(255, 255, 'B', 'b')
-const brushSizeSlider = colorSlider(4, 15, 'WIDTH')
+const brushSizeSlider = colorSlider(8, 155, 'WIDTH')
 
 const colorPreview = memo(() => {
 	const r = redSlider.value()
@@ -145,8 +145,8 @@ export const Drawing = {
 	init(canvasEl) {
 		Drawing.canvas = canvasEl
 		Drawing.ctx = canvasEl.getContext('2d')
-		Drawing.canvas.width = 400
-		Drawing.canvas.height = 400
+		Drawing.canvas.width = 320
+		Drawing.canvas.height = 320
 		Drawing.clear()
 	},
 
@@ -348,8 +348,9 @@ if (window.innerWidth < 500) {
 }
 
 export const canvasEl = dom(['.container',
+	['.woof', strokeCount,],
 	drawCanvas,
-	['.bar', actionbuttons, strokeCount,],
+	['.bar', actionbuttons, ],
 	controls,
 ])
 
