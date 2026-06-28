@@ -5,7 +5,6 @@ import { encode } from './tiny_stroke/parser.js'
 import { CONFIG } from './script.js';
 import { Keymanager } from './keymanager.js';
 
-
 // ============== CONSTANTS ==============
 const SCALE = window.innerWidth < 500 ? window.innerWidth / 500 : 1
 const ANIMATION_SPEED = 20
@@ -32,7 +31,6 @@ function createGradientStyle(axis, r, g, b) {
 	return `background: linear-gradient(to right, ${colors[axis][0]}, ${colors[axis][1]})`
 }
 
-let fakeRed = reactive(5)
 let red = reactive(5)
 let green = reactive(5)
 let blue = reactive(5)
@@ -95,7 +93,6 @@ function slider(initialValue, max = 255, label) {
 	}
 }
 
- fakeRed = colorSlider(2, 255, 'R', 'r')
  let redSlider = colorSlider(2, 255, 'R', 'r')
  let greenSlider = colorSlider(55, 255, 'G', 'g')
  let blueSlider = colorSlider(255, 255, 'B', 'b')

@@ -116,8 +116,7 @@ function parseAndLoadDrawing(block){
 	}
 }
 
-state.blocks.memo(blocks => state.usersBlock.next(findUserChannel(blocks)))
-state.usersBlock.memo(block => (block && block.id) ? loadUserDrawing(block) : null)
+state.usersBlock.memo(block => (block && block.id && block.type == 'Image') ? loadUserDrawing(block) : null)
 state.isAuthenticated.memo(is => is ? notificationpopup("Authenticated"):null)
 
 async function fetchBlocks(token){
