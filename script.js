@@ -258,7 +258,9 @@ const guestImages =  ['div',
 			: ['.list', ...RSVPBlocks.value()
 				// .map(e =>  e.user.name)
 				// .filter(unique)
-				.map(e => ['p.list-item', ['img', {src: e.image.src}], e.user.name])]
+				.map(e => ['p.list-item',  
+					['img', {src: e.image.src}],
+					['a', {href: 'https://are.na/'+e.user.slug}, e.user.name]])]
 				,
 		[RSVPBlocks, state.guestListView])
 	]

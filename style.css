@@ -154,6 +154,10 @@ hr {
 	grid-gap: 1em;
 }
 
+.list-item a {
+	text-decoration: none;
+}
+
 .going {
 	padding: .5em;
 	background-color: #A7D96C;
