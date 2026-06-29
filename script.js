@@ -134,8 +134,8 @@ async function fetchBlocks(token){
 const RSVPBlocks = state.blocks.memo(blocks => {
   return blocks.filter(block => 
     block.type === 'Image' 
-			&& block.metadata
-			&& block.description?.plain.toLowerCase().includes('rsvp')
+			// && block.metadata
+			// && block.description?.plain.toLowerCase().includes('rsvp')
 )});
 
 const RSVPBlockLength = memo(() => RSVPBlocks.value().length || 0, [RSVPBlocks])
